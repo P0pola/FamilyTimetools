@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -86,6 +86,46 @@ namespace FamilyTimeESP.UI
             };
             refresh.Add(sync);
             sync();
+        }
+
+        internal static void Dropdown(GameObject parent, string caption, string[] options, int defaultIndex,
+            System.Action<int> onChanged, List<System.Action> refresh, System.Func<int> current)
+        {
+            var box = Vertical(parent, "DropdownSetting", 4, 8);
+            UIFactory.SetLayoutElement(box, minHeight: 62, preferredHeight: 62, flexibleWidth: 1, flexibleHeight: 0);
+            Label(box, caption, 22);
+            UnityEngine.UI.Dropdown dropdown;
+            GameObject root = UIFactory.CreateDropdown(box, "Value", out dropdown, "选择...", 14, onChanged, options);
+            UIFactory.SetLayoutElement(root, minHeight: 30, preferredHeight: 30, flexibleWidth: 1, flexibleHeight: 0);
+            dropdown.captionText.font = EspMod.Instance.UiFont;
+            dropdown.itemText.font = EspMod.Instance.UiFont;
+            dropdown.value = defaultIndex;
+            dropdown.RefreshShownValue();
+            refresh.Add(() =>
+            {
+                int want = current();
+                if (want >= 0 && want < options.Length && dropdown.value != want)
+                {
+                    dropdown.SetValueWithoutNotify(want);
+                    dropdown.RefreshShownValue();
+                }
+            });
+        }
+
+        internal static UnityEngine.UI.InputField Input(GameObject parent, string caption, string placeholder,
+            string initial, System.Action<string> onChanged, int width = 0)
+        {
+            var box = Vertical(parent, "InputSetting", 4, 8);
+            UIFactory.SetLayoutElement(box, minHeight: 62, preferredHeight: 62, flexibleWidth: width > 0 ? 0 : 1, flexibleHeight: 0, minWidth: width);
+            Label(box, caption, 22);
+            InputFieldRef field = UIFactory.CreateInputField(box, "Value", placeholder);
+            UnityEngine.UI.InputField input = field.Component;
+            input.textComponent.font = EspMod.Instance.UiFont;
+            if (input.placeholder is UnityEngine.UI.Text ph) ph.font = EspMod.Instance.UiFont;
+            input.text = initial;
+            input.onValueChanged.AddListener(value => onChanged(value));
+            UIFactory.SetLayoutElement(field.GameObject, minHeight: 30, preferredHeight: 30, flexibleWidth: 1, flexibleHeight: 0);
+            return input;
         }
 
         internal static void Slider(GameObject parent, string caption, float min, float max,

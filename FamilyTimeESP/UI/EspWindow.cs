@@ -63,7 +63,7 @@ namespace FamilyTimeESP.UI
             var pageHost = UiControls.Vertical(body, "Pages", 0, 0);
             UIFactory.SetLayoutElement(pageHost, minWidth: 420, flexibleWidth: 1, flexibleHeight: 1);
 
-            string[] titles = { "总览", "部件开关", "目标筛选", "绘制样式", "目标列表", "作弊功能", "关于 / 配置" };
+            string[] titles = { "总览", "部件开关", "目标筛选", "绘制样式", "目标列表", "作弊功能", "生成实体", "关于 / 配置" };
             for (int i = 0; i < titles.Length; i++)
             {
                 int index = i;
@@ -84,7 +84,8 @@ namespace FamilyTimeESP.UI
                     case 3: BuildStyle(content); break;
                     case 4: BuildTargets(content); break;
                     case 5: BuildCheats(content); break;
-                    case 6: BuildAbout(content); break;
+                    case 6: BuildSpawn(content); break;
+                    case 7: BuildAbout(content); break;
                 }
             }
             UiControls.Label(ContentRoot, "F1：ESP 开关    F2：窗口开关    标题栏拖动 / 窗口边缘缩放", 24, 12, true);
@@ -186,7 +187,72 @@ namespace FamilyTimeESP.UI
             Heading(content, "建造作弊", "作用于锤子建造与村民自动施工；只影响材料校验，不改动建筑本身。");
             Toggle(content, "免费建造", "建造不消耗材料，点击蓝图即可建成", Mod._freeBuild);
             UiControls.Label(content, "开启后放下蓝图，用锤子对准蓝图点击一次即可完成建造。", 44, 13, true);
-            UiControls.Button(content, "立即重新扫描", () => Mod.SettingsChanged());
+            UiControls.Button(content, "导出实体模板列表", () => Mod.LoggerInstance.Msg("模板列表已导出：" + TemplateDump.Export()));
+        }
+
+        private int _spawnTemplate = -1;
+        private Text _spawnInfo;
+
+        private void BuildSpawn(GameObject content)
+        {
+            Heading(content, "生成实体", "调用游戏自身的 GAT.GAT.CreateInstances，在当前角色位置生成实体。");
+            _spawnInfo = UiControls.Label(content, "模板列表：未加载（进入世界后点“刷新模板列表”）", 44, 13, true);
+            UiControls.Button(content, "刷新模板列表", RefreshTemplateList);
+            _spawnDropdown = content;
+        }
+
+        private GameObject _spawnDropdown;
+        private int _spawnCount = 1;
+        private float _spawnRadius = 2f;
+
+        private void RefreshTemplateList()
+        {
+            if (!Spawner.RefreshTemplates())
+            {
+                _spawnInfo.text = "模板列表：读取失败（需要先进入游戏世界）";
+                return;
+            }
+            _spawnTemplate = 0;
+            _spawnInfo.text = "模板列表：" + Spawner.Templates.Count + " 个实体模板";
+            BuildSpawnControls();
+        }
+
+        private void BuildSpawnControls()
+        {
+            if (_spawnPanel != null) UnityEngine.Object.Destroy(_spawnPanel);
+            foreach (Action stale in _spawnRefresh) _refresh.Remove(stale);
+            _spawnRefresh.Clear();
+            _spawnPanel = UiControls.Vertical(_spawnDropdown, "SpawnControls", 6, 6);
+            UiControls.Dropdown(_spawnPanel, "实体模板", Spawner.Names.ToArray(), _spawnTemplate,
+                index => _spawnTemplate = index, _spawnRefresh, () => _spawnTemplate);
+            UiControls.Input(_spawnPanel, "生成数量", "1", _spawnCount.ToString(), value =>
+            {
+                int parsed;
+                if (int.TryParse(value, out parsed) && parsed > 0) _spawnCount = Mathf.Clamp(parsed, 1, 200);
+            });
+            UiControls.Input(_spawnPanel, "散布半径（米）", "2", _spawnRadius.ToString("F1"), value =>
+            {
+                float parsed;
+                if (float.TryParse(value, out parsed)) _spawnRadius = Mathf.Clamp(parsed, 0f, 50f);
+            });
+            _refresh.AddRange(_spawnRefresh);
+            UiControls.Button(_spawnPanel, "在当前角色位置生成", DoSpawn);
+        }
+
+        private GameObject _spawnPanel;
+        private readonly List<Action> _spawnRefresh = new List<Action>();
+
+        private void DoSpawn()
+        {
+            if (Spawner.Templates.Count == 0)
+            {
+                _spawnInfo.text = "模板列表：未加载，请先点“刷新模板列表”";
+                return;
+            }
+            int n = Spawner.Spawn(_spawnTemplate, _spawnCount, _spawnRadius);
+            _spawnInfo.text = n > 0
+                ? "已生成 " + n + " 个：" + Spawner.Names[_spawnTemplate]
+                : "生成失败（模板索引无效或未进入世界）";
         }
 
         private void BuildAbout(GameObject content)
