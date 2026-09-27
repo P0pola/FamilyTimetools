@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.10.12217.157 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyTimeESP", "FamilyTimeESP\FamilyTimeESP.csproj", "{6B87A65E-183E-4B25-A0AF-269A63ED9CCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyTimeTools", "FamilyTimeTools\FamilyTimeTools.csproj", "{6B87A65E-183E-4B25-A0AF-269A63ED9CCA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     public sealed partial class EspMod
     {

@@ -10,7 +10,7 @@ using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
 using UniverseLib.UI.Widgets;
 
-namespace FamilyTimeESP.UI
+namespace FamilyTimeTools.UI
 {
     internal sealed class EspWindow : PanelBase
     {
@@ -24,7 +24,7 @@ namespace FamilyTimeESP.UI
         private float _nextRefresh;
         private EspMod Mod => EspMod.Instance;
 
-        public override string Name => "FamilyTime ESP  /  控制中心";
+        public override string Name => "FamilyTime Tools  /  控制中心";
         public override int MinWidth => 660;
         public override int MinHeight => 460;
         public override Vector2 DefaultAnchorMin => new Vector2(0.08f, 0.12f);
@@ -257,7 +257,7 @@ namespace FamilyTimeESP.UI
 
         private void BuildAbout(GameObject content)
         {
-            Heading(content, "FamilyTime ESP 2.0.0", "UniverseLib.Mono 1.6.2 / MelonLoader / Unity Mono");
+            Heading(content, "FamilyTime Tools 2.0.0", "UniverseLib.Mono 1.6.2 / MelonLoader / Unity Mono");
             UiControls.Label(content,
                 "窗口：UniverseLib PanelBase + UIFactory + UGUI\n" +
                 "实体：GAT.World.gat / fakeGATManager\n" +

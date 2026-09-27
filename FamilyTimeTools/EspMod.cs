@@ -3,10 +3,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UniverseLib;
 
-[assembly: MelonInfo(typeof(FamilyTimeESP.EspMod), "FamilyTime ESP", "2.0.0", "local")]
+[assembly: MelonInfo(typeof(FamilyTimeTools.EspMod), "FamilyTime Tools", "2.0.0", "P0pola")]
 [assembly: MelonGame("sgthale", "Family Time")]
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     public sealed partial class EspMod : MelonMod
     {
@@ -23,7 +23,7 @@ namespace FamilyTimeESP
             Instance = this;
             CreateSettings();
             Universe.Init(1f, CreateUI, LogUniverse, default(UniverseLib.Config.UniverseLibConfig));
-            LoggerInstance.Msg("FamilyTimeESP 2.0.0：F1 开关 ESP，F2 开关 UniverseLib 窗口。");
+            LoggerInstance.Msg("FamilyTimeTools 2.0.0：F1 开关 ESP，F2 开关 UniverseLib 窗口。");
         }
 
         private void CreateUI()
@@ -34,9 +34,9 @@ namespace FamilyTimeESP
             EspFont = System.IO.File.Exists(fontPath)
                 ? new Font(fontPath)
                 : Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "SimHei", "Noto Sans CJK SC" }, 14);
-            var owner = UniverseLib.UI.UniversalUI.RegisterUI("local.FamilyTimeESP", UpdateUI);
+            var owner = UniverseLib.UI.UniversalUI.RegisterUI("local.FamilyTimeTools", UpdateUI);
             Window = new UI.EspWindow(owner);
-            LoggerInstance.Msg("FamilyTimeESP UI ready, uiFont = " + UiFont.name + ", espFont = " + EspFont.name);
+            LoggerInstance.Msg("FamilyTimeTools UI ready, uiFont = " + UiFont.name + ", espFont = " + EspFont.name);
             _uiReady = true;
             SetWindowVisible(_windowRequested);
         }

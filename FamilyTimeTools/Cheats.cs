@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GAT;
 using HarmonyLib;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     // 建造的材料校验只有这一个入口：锤子点击建造（MalletTool.TryConstructBuildPlan）、
     // 村民自动施工（ConstructionScheduler）以及 BuildPlanManager.TryConstructBuildPlan

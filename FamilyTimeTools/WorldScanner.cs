@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GAT;
 using UnityEngine;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     internal enum Cat { Boar, Chicken, Hen, Rooster, Chick, Pig, Piglet, WolfGirl, WolfMama, Wolf, Player, Deer, Rabbit, Other, Item }
 

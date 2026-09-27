@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using MelonLoader;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     public sealed partial class EspMod
     {
@@ -30,7 +30,7 @@ namespace FamilyTimeESP
 
         private void CreateSettings()
         {
-            _cat = MelonPreferences.CreateCategory("FamilyTimeESP", "FamilyTime ESP");
+            _cat = MelonPreferences.CreateCategory("FamilyTimeESP", "FamilyTime Tools");
             _enabled = _cat.CreateEntry<bool>("Enabled", true, "启用 ESP", "F1 开关");
             _maxDistance = _cat.CreateEntry<float>("MaxDistance", 150f, "最大距离", "米");
             _showDistance = _cat.CreateEntry<bool>("ShowDistance", true, "显示距离", "");

@@ -1,12 +1,12 @@
-# FamilyTimeESP 2.0.0
+# FamilyTimeTools 2.0.0
 
 这是 `FamilyTime` Mono Unity 游戏的 ESP 插件重写项目。项目已经改为 Visual Studio 解决方案，并使用游戏目录中的 `UniverseLib.Mono.dll` 构建 UGUI 设置窗口；目标扫描与屏幕叠加功能沿用原插件的数据源和配置键。
 
 ## 项目文件
 
-- 解决方案：`builds\FamilyTimeESP\FamilyTimeESP.sln`
-- 项目文件：`builds\FamilyTimeESP\FamilyTimeESP\FamilyTimeESP.csproj`
-- 源码目录：`builds\FamilyTimeESP\FamilyTimeESP\`
+- 解决方案：`builds\FamilyTimeTools\FamilyTimeTools.sln`
+- 项目文件：`builds\FamilyTimeTools\FamilyTimeTools\FamilyTimeTools.csproj`
+- 源码目录：`builds\FamilyTimeTools\FamilyTimeTools\`
 - UniverseLib 引用：`UserLibs\UniverseLib.Mono.dll`
 
 项目默认目标框架为 `.NET Framework 4.7.2`，并从当前游戏目录引用 MelonLoader、Assembly-CSharp、UnityEngine 和 Unity Input System 程序集。`GameRoot` 默认指向本项目所在游戏根目录，也可以在 Visual Studio 的项目属性中覆盖。
@@ -32,13 +32,13 @@
 
 本次只完成源码项目和静态检查，**未执行编译、未启动游戏、未部署 DLL**。
 
-在确认需要构建时，可使用 Visual Studio 打开 `FamilyTimeESP.sln`，或使用本机 VS 的 MSBuild 构建 `Release|AnyCPU`。项目的 `PublishPlugin` 目标会在 Release 构建后把 DLL 复制到 `builds`；只有显式传入 `DeployToMods=true` 时才会额外复制到游戏的 `Mods` 目录。
+在确认需要构建时，可使用 Visual Studio 打开 `FamilyTimeTools.sln`，或使用本机 VS 的 MSBuild 构建 `Release|AnyCPU`。项目的 `PublishPlugin` 目标会在 Release 构建后把 DLL 复制到 `builds`；只有显式传入 `DeployToMods=true` 时才会额外复制到游戏的 `Mods` 目录。
 
 示例：
 
 ```text
-D:\VSstudio\vs2026\MSBuild\Current\Bin\MSBuild.exe builds\FamilyTimeESP\FamilyTimeESP.sln /p:Configuration=Release
-D:\VSstudio\vs2026\MSBuild\Current\Bin\MSBuild.exe builds\FamilyTimeESP\FamilyTimeESP.sln /p:Configuration=Release /p:DeployToMods=true
+D:\VSstudio\vs2026\MSBuild\Current\Bin\MSBuild.exe builds\FamilyTimeTools\FamilyTimeTools.sln /p:Configuration=Release
+D:\VSstudio\vs2026\MSBuild\Current\Bin\MSBuild.exe builds\FamilyTimeTools\FamilyTimeTools.sln /p:Configuration=Release /p:DeployToMods=true
 ```
 
 ## 运行时说明

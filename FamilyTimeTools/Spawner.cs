@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GAT;
 using UnityEngine;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     // 实体生成用的是游戏 SDK 自带接口：
     //   GAT.GAT.CreateInstance / CreateInstances(Matrix4x4[], templateIndex, onCreated)

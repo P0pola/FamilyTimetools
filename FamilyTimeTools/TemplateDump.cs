@@ -4,7 +4,7 @@ using System.Text;
 using GAT;
 using UnityEngine;
 
-namespace FamilyTimeESP
+namespace FamilyTimeTools
 {
     // 游戏 SDK 自带权威的实体模板表：
     //   GAT.GAT.GetTemplateEntries() -> IReadOnlyList<GAT.GATTemplateEntry>
@@ -48,7 +48,7 @@ namespace FamilyTimeESP
         private static string Write(string content)
         {
             string dir = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "UserData");
-            string file = Path.Combine(dir, "FamilyTimeESP_templates.txt");
+            string file = Path.Combine(dir, "FamilyTimeTools_templates.txt");
             File.WriteAllText(file, content, new UTF8Encoding(false));
             return file;
         }

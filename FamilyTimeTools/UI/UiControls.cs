@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 
-namespace FamilyTimeESP.UI
+namespace FamilyTimeTools.UI
 {
     internal static class UiControls
     {
