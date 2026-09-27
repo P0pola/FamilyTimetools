@@ -1,5 +1,7 @@
 # FamilyTimeTools 2.0.0
 
+仓库：https://github.com/P0pola/FamilyTimetools
+
 这是 `FamilyTime` Mono Unity 游戏的 ESP 插件重写项目。项目已经改为 Visual Studio 解决方案，并使用游戏目录中的 `UniverseLib.Mono.dll` 构建 UGUI 设置窗口；目标扫描与屏幕叠加功能沿用原插件的数据源和配置键。
 
 ## 项目文件
