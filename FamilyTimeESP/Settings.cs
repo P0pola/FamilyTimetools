@@ -24,6 +24,7 @@ namespace FamilyTimeESP
 
         internal MelonPreferences_Entry<bool> _showBoxes, _showTracers, _showCenter;
         internal MelonPreferences_Entry<float> _scanInterval;
+        internal MelonPreferences_Entry<bool> _freeBuild;
         private bool _settingsDirty;
         private float _saveAt;
 
@@ -53,6 +54,7 @@ namespace FamilyTimeESP
             _showTracers = _cat.CreateEntry("ShowTracers", false, "绘制连线");
             _showCenter = _cat.CreateEntry("ShowCenter", false, "绘制中心点");
             _scanInterval = _cat.CreateEntry("ScanInterval", 0.15f, "扫描间隔");
+            _freeBuild = _cat.CreateEntry("FreeBuild", false, "免费建造", "建造不消耗材料");
         }
 
         internal void SettingsChanged()
@@ -89,6 +91,7 @@ namespace FamilyTimeESP
             _showBoxes.Value = true;
             _showTracers.Value = _showCenter.Value = false;
             _scanInterval.Value = 0.15f;
+            _freeBuild.Value = false;
             foreach (Cat category in AllCats)
                 _catFilter[category].Value = category != Cat.Other && category != Cat.Item;
             SettingsChanged();

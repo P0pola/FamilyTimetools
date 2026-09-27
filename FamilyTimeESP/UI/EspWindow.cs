@@ -63,7 +63,7 @@ namespace FamilyTimeESP.UI
             var pageHost = UiControls.Vertical(body, "Pages", 0, 0);
             UIFactory.SetLayoutElement(pageHost, minWidth: 420, flexibleWidth: 1, flexibleHeight: 1);
 
-            string[] titles = { "总览", "部件开关", "目标筛选", "绘制样式", "目标列表", "关于 / 配置" };
+            string[] titles = { "总览", "部件开关", "目标筛选", "绘制样式", "目标列表", "作弊功能", "关于 / 配置" };
             for (int i = 0; i < titles.Length; i++)
             {
                 int index = i;
@@ -83,7 +83,8 @@ namespace FamilyTimeESP.UI
                     case 2: BuildFilters(content); break;
                     case 3: BuildStyle(content); break;
                     case 4: BuildTargets(content); break;
-                    case 5: BuildAbout(content); break;
+                    case 5: BuildCheats(content); break;
+                    case 6: BuildAbout(content); break;
                 }
             }
             UiControls.Label(ContentRoot, "F1：ESP 开关    F2：窗口开关    标题栏拖动 / 窗口边缘缩放", 24, 12, true);
@@ -179,6 +180,14 @@ namespace FamilyTimeESP.UI
         }
 
         private GameObject _targetContent;
+
+        private void BuildCheats(GameObject content)
+        {
+            Heading(content, "建造作弊", "作用于锤子建造与村民自动施工；只影响材料校验，不改动建筑本身。");
+            Toggle(content, "免费建造", "建造不消耗材料，点击蓝图即可建成", Mod._freeBuild);
+            UiControls.Label(content, "开启后放下蓝图，用锤子对准蓝图点击一次即可完成建造。", 44, 13, true);
+            UiControls.Button(content, "立即重新扫描", () => Mod.SettingsChanged());
+        }
 
         private void BuildAbout(GameObject content)
         {

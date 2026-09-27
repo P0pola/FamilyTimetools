@@ -16,6 +16,7 @@ namespace FamilyTimeESP
         private bool _uiReady;
         internal Font UiFont { get; private set; }
         internal Font EspFont { get; private set; }
+        internal bool FreeBuildEnabled => _freeBuild.Value;
 
         public override void OnInitializeMelon()
         {
