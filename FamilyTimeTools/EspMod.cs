@@ -26,14 +26,30 @@ namespace FamilyTimeTools
             LoggerInstance.Msg("FamilyTimeTools 2.0.0：F1 开关 ESP，F2 开关 UniverseLib 窗口。");
         }
 
+        // 中文界面字体：游戏是 Windows 游戏，微软雅黑必然存在，直接优先用系统字体。
+        // 后面几个是保险——万一系统没有微软雅黑（精简版 Windows / Wine），
+        // 还能落到别的中文字体上，不会退化成 Arial 把中文画成方框。
+        private static readonly string[] CjkFontNames =
+        {
+            "Microsoft YaHei",
+            "Microsoft YaHei UI",
+            "SimHei",
+            "SimSun",
+            "Noto Sans CJK SC",
+            "Noto Sans SC",
+            "PingFang SC",
+            "WenQuanYi Micro Hei",
+        };
+
+        private static Font CreateCjkFont(int size)
+        {
+            return Font.CreateDynamicFontFromOSFont(CjkFontNames, size);
+        }
+
         private void CreateUI()
         {
-            UiFont = Font.CreateDynamicFontFromOSFont(
-                new[] { "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "SimHei", "Arial" }, 18);
-            string fontPath = System.IO.Path.Combine(Application.dataPath, "Fonts", "NotoSansCJKsc-Regular.otf");
-            EspFont = System.IO.File.Exists(fontPath)
-                ? new Font(fontPath)
-                : Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "SimHei", "Noto Sans CJK SC" }, 14);
+            UiFont = CreateCjkFont(18);
+            EspFont = CreateCjkFont(14);
             var owner = UniverseLib.UI.UniversalUI.RegisterUI("local.FamilyTimeTools", UpdateUI);
             Window = new UI.EspWindow(owner);
             LoggerInstance.Msg("FamilyTimeTools UI ready, uiFont = " + UiFont.name + ", espFont = " + EspFont.name);
