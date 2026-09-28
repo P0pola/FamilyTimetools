@@ -145,8 +145,8 @@ namespace FamilyTimeTools.UI
             var actions = UiControls.Horizontal(content, "FilterActions", 44);
             UiControls.Button(actions, "全部启用", () => Mod.SetAllCategories(true));
             UiControls.Button(actions, "全部禁用", () => Mod.SetAllCategories(false));
-            foreach (Cat category in EspMod.AllCats)
-                Toggle(content, EspMod.CatName(category), category == Cat.Item ? "可搬运物品" : "GAT 实体模板", Mod._catFilter[category]);
+            foreach (EntityKind kind in EspMod.Kinds)
+                Toggle(content, kind.Name, kind.IsItem ? "可搬运物品" : "GAT 实体模板", Mod._kindFilter[kind]);
         }
 
         private void BuildStyle(GameObject content)
@@ -285,12 +285,13 @@ namespace FamilyTimeTools.UI
                 UiControls.Paint(_styles[i], Mod._style.Value == i ? UiControls.Accent : UiControls.Surface);
             if (_page == 0)
             {
-                int[] counts = new int[EspMod.AllCats.Length];
-                foreach (EspTarget target in Mod._targets) counts[(int)target.Cat]++;
+                int[] counts = new int[EspMod.Kinds.Length];
+                foreach (EspTarget target in Mod._targets)
+                    counts[System.Array.IndexOf(EspMod.Kinds, target.Kind)]++;
                 var builder = new StringBuilder("当前目标：" + Mod._targets.Count + "\n");
                 for (int i = 0; i < counts.Length; i++)
                 {
-                    builder.Append(EspMod.CatName((Cat)i)).Append("  ").Append(counts[i]).Append("     ");
+                    builder.Append(EspMod.Kinds[i].Name).Append("  ").Append(counts[i]).Append("     ");
                     if (i % 3 == 2) builder.AppendLine();
                 }
                 _counts.text = builder.ToString();
@@ -308,7 +309,7 @@ namespace FamilyTimeTools.UI
                     if (!active) continue;
                     EspTarget target = Mod._targets[i];
                     _targetRows[i].text = (i + 1).ToString("D3") + "   " + target.Label + "   " + target.Distance.ToString("F1") + " m";
-                    _targetRows[i].color = EspMod.ColorFor(target.Cat);
+                    _targetRows[i].color = target.Kind.Color;
                 }
             }
         }

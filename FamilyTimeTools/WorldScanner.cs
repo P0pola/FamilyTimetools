@@ -4,7 +4,27 @@ using UnityEngine;
 
 namespace FamilyTimeTools
 {
-    internal enum Cat { Boar, Chicken, Hen, Rooster, Chick, Pig, Piglet, WolfGirl, WolfMama, Wolf, Player, Deer, Rabbit, Other, Item }
+    // 实体类别只在这里定义一次：名字、匹配关键字、颜色、默认开关都在同一行。
+    // 新增一类实体 = 加一行记录，匹配/命名/配色/筛选 UI 全部自动生效。
+    internal sealed class EntityKind
+    {
+        public readonly string Key;         // 配置键后缀，保持与旧版 Cat_Xxx 一致
+        public readonly string Name;        // 界面与标签上显示的中文名
+        public readonly string[] Match;     // 模板名包含的关键字（全部小写）
+        public readonly Color Color;
+        public readonly bool DefaultEnabled;
+        public readonly bool IsItem;        // 走 rigidTransformManager 而不是 GAT
+
+        public EntityKind(string key, string name, Color color, bool defaultEnabled = true, bool isItem = false, params string[] match)
+        {
+            Key = key;
+            Name = name;
+            Color = color;
+            DefaultEnabled = defaultEnabled;
+            IsItem = isItem;
+            Match = match ?? new string[0];
+        }
+    }
 
     internal sealed class EspTarget
     {
@@ -12,14 +32,39 @@ namespace FamilyTimeTools
         public string Label;
         public Color Color;
         public float Distance;
-        public Cat Cat;
+        public EntityKind Kind;
     }
 
     public sealed partial class EspMod
     {
         internal readonly List<EspTarget> _targets = new List<EspTarget>();
-        internal static readonly Cat[] AllCats = (Cat[])System.Enum.GetValues(typeof(Cat));
+
+        // 匹配按数组顺序取第一个命中的关键字，所以更具体的关键字（小鸡/狼女…）要排在更宽泛的（鸡/狼）前面。
+        // Key 写入配置时拼成旧版的 "Cat_Xxx"，老配置文件继续有效。
+        internal static readonly EntityKind[] Kinds =
+        {
+            new EntityKind("Other", "其他",   new Color(0.40f, 1.00f, 0.60f), false),
+            new EntityKind("Item", "物品",   new Color(0.50f, 0.85f, 1.00f), false, true),
+            new EntityKind("Chick", "小鸡",   new Color(1.00f, 1.00f, 0.65f), match: "baby_chick"),
+            new EntityKind("Rooster", "公鸡",   new Color(1.00f, 0.45f, 0.35f), match: "rooster"),
+            new EntityKind("Hen", "母鸡",   new Color(1.00f, 0.82f, 0.45f), match: "hen"),
+            new EntityKind("Chicken", "鸡",     new Color(1.00f, 0.95f, 0.40f), match: "chicken"),
+            new EntityKind("Piglet", "猪崽",   new Color(1.00f, 0.78f, 0.85f), match: "piglet"),
+            new EntityKind("Pig", "猪",     new Color(1.00f, 0.65f, 0.75f), match: "pig"),
+            new EntityKind("Boar", "野猪",   new Color(1.00f, 0.55f, 0.20f), match: "boar"),
+            new EntityKind("WolfGirl", "狼女",   new Color(0.75f, 0.55f, 1.00f), match: "wolf_girl", "wolfgirl"),
+            new EntityKind("WolfMama", "狼妈妈", new Color(0.90f, 0.35f, 0.85f), match: "wolf_mama", "wolfmama"),
+            new EntityKind("Wolf", "狼",     new Color(0.95f, 0.30f, 0.30f), match: "wolf"),
+            new EntityKind("Player", "玩家",   new Color(0.40f, 1.00f, 0.55f), match: "fake_player", "player"),
+            //new EntityKind("Deer", "鹿",     new Color(0.90f, 0.75f, 0.50f), match: "deer"),
+            //new EntityKind("Rabbit", "兔子",   new Color(0.95f, 0.95f, 0.95f), match: "rabbit"),
+        };
+
+        internal static readonly EntityKind OtherKind = Kinds[0];
+        internal static readonly EntityKind ItemKind = Kinds[1];
+
         private float _scanTimer;
+
         private void ScanWorld()
         {
             _targets.Clear();
@@ -64,15 +109,15 @@ namespace FamilyTimeTools
                 if (dist > maxDist) continue;
 
                 string raw;
-                Cat cat = DescribeHandle(gat, handle, out raw);
-                if (!PassFilter(cat)) continue;
+                EntityKind kind = DescribeHandle(gat, handle, out raw);
+                if (!PassFilter(kind)) continue;
 
                 _targets.Add(new EspTarget
                 {
                     World = pos,
                     Label = raw,
-                    Cat = cat,
-                    Color = ColorFor(cat),
+                    Kind = kind,
+                    Color = kind.Color,
                     Distance = dist,
                 });
             }
@@ -88,39 +133,42 @@ namespace FamilyTimeTools
             return true;
         }
 
-        private static Cat DescribeHandle(GAT.GAT gat, Handle handle, out string label)
+        // 遍历整张表取第一个命中的关键字；命中就用类别名，未命中的有名字模板沿用原始名，其余归入“其他”。
+        private static EntityKind DescribeHandle(GAT.GAT gat, Handle handle, out string label)
         {
-            label = "实体";
             int idx = gat.GetTemplateIndexFromHandle(handle);
             var tpl = gat.GetTemplate(idx);
-            if (tpl != null)
+            if (tpl != null && !string.IsNullOrEmpty(tpl.name))
             {
-                string n = tpl.name;
-                if (!string.IsNullOrEmpty(n))
+                string name = tpl.name;
+                string low = name.ToLowerInvariant();
+                foreach (EntityKind kind in Kinds)
                 {
-                    string low = n.ToLowerInvariant();
-                    if (low.Contains("baby_chick")) { label = "小鸡"; return Cat.Chick; }
-                    if (low.Contains("rooster")) { label = "公鸡"; return Cat.Rooster; }
-                    if (low.Contains("hen")) { label = "母鸡"; return Cat.Hen; }
-                    if (low.Contains("chicken")) { label = "鸡"; return Cat.Chicken; }
-                    if (low.Contains("piglet")) { label = "猪崽"; return Cat.Piglet; }
-                    if (low.Contains("pig")) { label = "猪"; return Cat.Pig; }
-                    if (low.Contains("boar")) { label = "野猪"; return Cat.Boar; }
-                    if (low.Contains("wolf_girl") || low.Contains("wolfgirl")) { label = "狼女"; return Cat.WolfGirl; }
-                    if (low.Contains("wolf_mama") || low.Contains("wolfmama")) { label = "狼妈妈"; return Cat.WolfMama; }
-                    if (low.Contains("wolf")) { label = "狼"; return Cat.Wolf; }
-                    if (low.Contains("fake_player") || low.Contains("player")) { label = "玩家"; return Cat.Player; }
-                    if (low.Contains("deer")) { label = "鹿"; return Cat.Deer; }
-                    if (low.Contains("rabbit")) { label = "兔子"; return Cat.Rabbit; }
-                    label = n;
+                    if (Matches(kind, low))
+                    {
+                        label = kind.Name;
+                        return kind;
+                    }
                 }
+                label = name;
+                return OtherKind;
             }
-            return Cat.Other;
+            label = OtherKind.Name;
+            return OtherKind;
+        }
+
+        private static bool Matches(EntityKind kind, string lowerTemplateName)
+        {
+            for (int i = 0; i < kind.Match.Length; i++)
+            {
+                if (lowerTemplateName.Contains(kind.Match[i])) return true;
+            }
+            return false;
         }
 
         private void ScanRigidTransforms(Vector3 eye)
         {
-            if (!PassFilter(Cat.Item)) return;
+            if (!PassFilter(ItemKind)) return;
 
             var mgr = World.rigidTransformManager;
             if (mgr == null) return;
@@ -137,7 +185,7 @@ namespace FamilyTimeTools
                 float dist = Vector3.Distance(pos, eye);
                 if (dist > maxDist) continue;
 
-                string label = "物品";
+                string label = ItemKind.Name;
                 var go = rigid.gameObject;
                 if (go != null && !string.IsNullOrEmpty(go.name)) label = go.name;
 
@@ -145,61 +193,16 @@ namespace FamilyTimeTools
                 {
                     World = pos,
                     Label = label,
-                    Cat = Cat.Item,
-                    Color = new Color(0.50f, 0.85f, 1f),
+                    Kind = ItemKind,
+                    Color = ItemKind.Color,
                     Distance = dist,
                 });
             }
         }
 
-        private bool PassFilter(Cat c)
+        private bool PassFilter(EntityKind kind)
         {
-            return _catFilter[c].Value;
+            return _kindFilter[kind].Value;
         }
-
-        internal static string CatName(Cat c)
-        {
-            switch (c)
-            {
-                case Cat.Boar: return "野猪";
-                case Cat.Chicken: return "鸡肉";
-                case Cat.Hen: return "母鸡";
-                case Cat.Rooster: return "公鸡";
-                case Cat.Chick: return "小鸡";
-                case Cat.Pig: return "猪";
-                case Cat.Piglet: return "猪崽";
-                case Cat.WolfGirl: return "狼女";
-                case Cat.WolfMama: return "狼妈妈";
-                case Cat.Wolf: return "狼";
-                case Cat.Player: return "玩家";
-                case Cat.Deer: return "鹿";
-                case Cat.Rabbit: return "兔子";
-                case Cat.Item: return "物品";
-                default: return "其他";
-            }
-        }
-
-        internal static Color ColorFor(Cat c)
-        {
-            switch (c)
-            {
-                case Cat.Boar: return new Color(1.00f, 0.55f, 0.20f);
-                case Cat.Chicken: return new Color(1.00f, 0.95f, 0.40f);
-                case Cat.Hen: return new Color(1.00f, 0.82f, 0.45f);
-                case Cat.Rooster: return new Color(1.00f, 0.45f, 0.35f);
-                case Cat.Chick: return new Color(1.00f, 1.00f, 0.65f);
-                case Cat.Pig: return new Color(1.00f, 0.65f, 0.75f);
-                case Cat.Piglet: return new Color(1.00f, 0.78f, 0.85f);
-                case Cat.WolfGirl: return new Color(0.75f, 0.55f, 1.00f);
-                case Cat.WolfMama: return new Color(0.90f, 0.35f, 0.85f);
-                case Cat.Wolf: return new Color(0.95f, 0.30f, 0.30f);
-                case Cat.Player: return new Color(0.40f, 1.00f, 0.55f);
-                case Cat.Deer: return new Color(0.90f, 0.75f, 0.50f);
-                case Cat.Rabbit: return new Color(0.95f, 0.95f, 0.95f);
-                case Cat.Item: return new Color(0.50f, 0.85f, 1.00f);
-                default: return new Color(0.40f, 1.00f, 0.60f);
-            }
-        }
-
     }
 }

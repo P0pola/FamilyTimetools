@@ -18,8 +18,8 @@ namespace FamilyTimeTools
         internal MelonPreferences_Entry<float> _thickness;
         internal MelonPreferences_Entry<int> _style;
         internal MelonPreferences_Entry<int> _maxTargets;
-        internal readonly Dictionary<Cat, MelonPreferences_Entry<bool>> _catFilter
-            = new Dictionary<Cat, MelonPreferences_Entry<bool>>();
+        internal readonly Dictionary<EntityKind, MelonPreferences_Entry<bool>> _kindFilter
+            = new Dictionary<EntityKind, MelonPreferences_Entry<bool>>();
 
 
         internal MelonPreferences_Entry<bool> _showBoxes, _showTracers, _showCenter;
@@ -43,11 +43,8 @@ namespace FamilyTimeTools
             _style = _cat.CreateEntry<int>("Style", 0, "框体样式", "0方框 1四角 2填充 3方框+角");
             _maxTargets = _cat.CreateEntry<int>("MaxTargets", 200, "最多目标", "10 - 800");
 
-            foreach (Cat c in AllCats)
-            {
-                bool def = c != Cat.Other && c != Cat.Item;
-                _catFilter[c] = _cat.CreateEntry<bool>("Cat_" + c, def, CatName(c), "");
-            }
+            foreach (EntityKind kind in Kinds)
+                _kindFilter[kind] = _cat.CreateEntry<bool>("Cat_" + kind.Key, kind.DefaultEnabled, kind.Name, "");
 
 
             _showBoxes = _cat.CreateEntry("ShowBoxes", true, "绘制框体");
@@ -72,7 +69,7 @@ namespace FamilyTimeTools
 
         internal void SetAllCategories(bool value)
         {
-            foreach (var entry in _catFilter.Values) entry.Value = value;
+            foreach (var entry in _kindFilter.Values) entry.Value = value;
             SettingsChanged();
         }
 
@@ -92,8 +89,8 @@ namespace FamilyTimeTools
             _showTracers.Value = _showCenter.Value = false;
             _scanInterval.Value = 0.15f;
             _freeBuild.Value = false;
-            foreach (Cat category in AllCats)
-                _catFilter[category].Value = category != Cat.Other && category != Cat.Item;
+            foreach (EntityKind kind in Kinds)
+                _kindFilter[kind].Value = kind.DefaultEnabled;
             SettingsChanged();
         }
     }
