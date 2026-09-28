@@ -1,4 +1,4 @@
-# FamilyTimeTools 2.0.0
+# FamilyTimeTools 2.1.0
 
 仓库：https://github.com/P0pola/FamilyTimetools
 
@@ -9,6 +9,7 @@
 - **ESP 屏幕叠加**：按类别给世界中的实体与物品绘制框体、名称、距离、连线、中心点和屏外指示。
 - **UGUI 设置窗口**：基于 `UniverseLib.Mono` 的完整控制中心，支持拖动、缩放与分页，共 8 页。
 - **免费建造**：开启后放下蓝图，用锤子点击一次即可建成，不消耗材料。
+- **地板堆叠**：地板可以贴着下一块地板往上摸，间距等于地板自身厚度，不会空出一整格。
 - **实体生成**：读取游戏模板表，在当前角色位置批量生成指定实体。
 - **模板导出**：把游戏 SDK 的实体模板表导出为文本，便于查看模板名与索引。
 
@@ -16,7 +17,6 @@
 
 | 按键 | 作用 |
 | --- | --- |
-| `F1` | 开关 ESP（等效于窗口里的总开关） |
 | `F2` | 开关设置窗口（不影响 ESP 运行） |
 
 配置修改后自动保存；窗口中的「保存配置」按钮可立即落盘。
@@ -30,7 +30,7 @@
 | 目标筛选 | 各实体类别独立开关，另提供全部启用 / 全部禁用 |
 | 绘制样式 | 方框、四角、填充、框加角，距离渐变、仅屏幕内、框体缩放、线宽 |
 | 目标列表 | 当前筛选后按距离排序的目标、类别与距离 |
-| 作弊功能 | 免费建造、导出实体模板列表 |
+| 作弊功能 | 免费建造、地板堆叠、导出实体模板列表 |
 | 生成实体 | 刷新模板列表、选择模板、设置数量与散布半径后生成 |
 | 关于 / 配置 | 打开配置目录、立即保存、恢复默认、重置窗口位置、关闭窗口 |
 
@@ -110,6 +110,17 @@ new EntityKind("WolfGirl", "狼女", new Color(0.75f, 0.55f, 1.00f), match: "wol
 - 目标扫描默认 0.15 秒一次，可在总览页调整；扫描结果按距离排序并受「最多目标」限制。
 - 中文字体直接取系统字体，优先 `Microsoft YaHei`（微软雅黑），依次回退到 `SimHei` / `SimSun` / `Noto Sans CJK SC` 等；不依赖游戏目录里的字体文件。
 - 免费建造通过 Harmony 前缀拦截 `GAT.BuildPlanManager.TryGetConstructionMaterials`，覆盖锤子建造与村民自动施工两条路径。
+- 地板堆叠在 `FloorStacking.cs`。游戏原本为什么堆不了：`BuildPart.GetPlacementCell` 把命中点四舍五入成整数格，地板是薄板，瞄准顶面取整后 Y 仍然落回同一格，而 `BuildPartManager.TryCreateBuildPart` 对同（模板 + 格子 + 朝向）直接返回 false，表现就是蓝图凭空消失；而向上顺延一整格（1 米）又远高于地板实际厚度。
+- 开启后，若正在放地板、且瞄中已建成的另一块地板、且命中面朝上，新地板高度直接取“命中面高度 − 自身网格包围盒下沿”，底面正好贴住命中面，间距等于地板厚度。X / Z 仍然按最小格子吸附，不会出现半格。
+- 判定“是不是地板”用 `BuildPart.displayName`（Hay Floor / Wood Floor），模板名不可靠（wood_planks01 里没有 floor）。只有地板走这条通道，其余建筑完全不受影响。
+- 连续高度绕不开 `Cell.Pack`（x 12 位 / y 8 位 / z 12 位），所以整数格只当存放键：先向上顺延到未占用的格，再用差值等量的浮点偏移把矩阵平移拉回真正高度（`GetPlacementMatrix` 后置），预览 / 蓝图 / 成品 / 碰撞盒一致。
+- 偏移随游戏自带世界存档一起保存：游戏的存档格式（byte + short×3）写不下小数，
+  所以本模块用 `WorldSerializer` 的自定义段机制另存一段 `build.floor-stack`（每条 15 字节：templateIndex + cell xyz + rotation + offset）。
+  游戏自带的 `build.parts` 是 order 80，本段排 **79**，
+  于是读档时偏移表先就位，建筑创建时矩阵一次就算对，不会先落网格再跳位。
+  仅保存真正建成的零件（预览阶段预写的偏移不落盘）；旧存档没有这个段，读档时会先清空偏移表，不会互相污染。
+  读档期间 `BuildPartManager.LoadFrom` 会先删光旧零件，此时按 `WorldSerializer.isLoadingInProgress` 判断并保留偏移，
+  否则刚装好的表会被自己的移除钩子清掉。
 - 实体生成直接调用 `GAT.GAT.CreateInstances`，与游戏内部 `SpawnOffspringForFemales` 用法一致；模板索引只在进入世界后有效，每次进入世界需要重新刷新。
 - 配置分类为 `FamilyTimeESP`，保存于游戏的 `UserData` 目录。配置键与旧版本保持一致，升级后原有设置继续有效。
 - 「导出实体模板列表」会写出 `UserData\FamilyTimeTools_templates.txt`。

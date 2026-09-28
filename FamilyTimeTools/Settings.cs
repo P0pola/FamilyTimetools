@@ -25,13 +25,14 @@ namespace FamilyTimeTools
         internal MelonPreferences_Entry<bool> _showBoxes, _showTracers, _showCenter;
         internal MelonPreferences_Entry<float> _scanInterval;
         internal MelonPreferences_Entry<bool> _freeBuild;
+        internal MelonPreferences_Entry<bool> _stackFloor;
         private bool _settingsDirty;
         private float _saveAt;
 
         private void CreateSettings()
         {
             _cat = MelonPreferences.CreateCategory("FamilyTimeESP", "FamilyTime Tools");
-            _enabled = _cat.CreateEntry<bool>("Enabled", true, "启用 ESP", "F1 开关");
+            _enabled = _cat.CreateEntry<bool>("Enabled", true, "启用 ESP", "总开关");
             _maxDistance = _cat.CreateEntry<float>("MaxDistance", 150f, "最大距离", "米");
             _showDistance = _cat.CreateEntry<bool>("ShowDistance", true, "显示距离", "");
             _showName = _cat.CreateEntry<bool>("ShowName", true, "显示名称", "");
@@ -52,6 +53,7 @@ namespace FamilyTimeTools
             _showCenter = _cat.CreateEntry("ShowCenter", false, "绘制中心点");
             _scanInterval = _cat.CreateEntry("ScanInterval", 0.15f, "扫描间隔");
             _freeBuild = _cat.CreateEntry("FreeBuild", false, "免费建造", "建造不消耗材料");
+            _stackFloor = _cat.CreateEntry("StackFloor", false, "地板堆叠", "地板可以贴着下一块地板往上摸");
         }
 
         internal void SettingsChanged()
@@ -89,6 +91,7 @@ namespace FamilyTimeTools
             _showTracers.Value = _showCenter.Value = false;
             _scanInterval.Value = 0.15f;
             _freeBuild.Value = false;
+            _stackFloor.Value = false;
             foreach (EntityKind kind in Kinds)
                 _kindFilter[kind].Value = kind.DefaultEnabled;
             SettingsChanged();

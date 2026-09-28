@@ -88,7 +88,7 @@ namespace FamilyTimeTools.UI
                     case 7: BuildAbout(content); break;
                 }
             }
-            UiControls.Label(ContentRoot, "F1：ESP 开关    F2：窗口开关    标题栏拖动 / 窗口边缘缩放", 24, 12, true);
+            UiControls.Label(ContentRoot, "F2：窗口开关    标题栏拖动 / 窗口边缘缩放", 24, 12, true);
             SelectPage(0);
         }
 
@@ -117,7 +117,7 @@ namespace FamilyTimeTools.UI
         private void BuildOverview(GameObject content)
         {
             Heading(content, "世界目标总览", "配置即时生效；修改后自动保存。窗口关闭不会关闭 ESP。");
-            Toggle(content, "ESP 总开关", "控制扫描与全部目标绘制，快捷键 F1", Mod._enabled);
+            Toggle(content, "ESP 总开关", "控制扫描与全部目标绘制", Mod._enabled);
             _counts = UiControls.Label(content, "", 116);
             UiControls.Slider(content, "最大距离（米）", 20, 500, () => Mod._maxDistance.Value,
                 value => Mod._maxDistance.Value = value, "F0", false, _refresh);
@@ -184,9 +184,11 @@ namespace FamilyTimeTools.UI
 
         private void BuildCheats(GameObject content)
         {
-            Heading(content, "建造作弊", "作用于锤子建造与村民自动施工；只影响材料校验，不改动建筑本身。");
+            Heading(content, "建造作弊", "作用于锤子建造与村民自动施工；只影响材料校验与放置校验，不改动建筑本身。");
             Toggle(content, "免费建造", "建造不消耗材料，点击蓝图即可建成", Mod._freeBuild);
             UiControls.Label(content, "开启后放下蓝图，用锤子对准蓝图点击一次即可完成建造。", 44, 13, true);
+            Toggle(content, "地板堆叠", "地板可以贴着下一块地板往上摸，按实际厚度紧贴", Mod._stackFloor);
+            UiControls.Label(content, "只影响地板：瞄准已建成地板的顶面时，新地板底面直接贴住它；X / Z 仍然按最小格子对齐，其余建筑不受影响。", 44, 13, true);
             UiControls.Button(content, "导出实体模板列表", () => Mod.LoggerInstance.Msg("模板列表已导出：" + TemplateDump.Export()));
         }
 
@@ -257,7 +259,7 @@ namespace FamilyTimeTools.UI
 
         private void BuildAbout(GameObject content)
         {
-            Heading(content, "FamilyTime Tools 2.0.0", "UniverseLib.Mono 1.6.2 / MelonLoader / Unity Mono");
+            Heading(content, "FamilyTime Tools 2.1.0", "UniverseLib.Mono 1.6.2 / MelonLoader / Unity Mono");
             UiControls.Label(content,
                 "窗口：UniverseLib PanelBase + UIFactory + UGUI\n" +
                 "实体：GAT.World.gat / fakeGATManager\n" +

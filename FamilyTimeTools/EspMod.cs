@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UniverseLib;
 
-[assembly: MelonInfo(typeof(FamilyTimeTools.EspMod), "FamilyTime Tools", "2.0.0", "P0pola")]
+[assembly: MelonInfo(typeof(FamilyTimeTools.EspMod), "FamilyTime Tools", "2.1.0", "P0pola")]
 [assembly: MelonGame("sgthale", "Family Time")]
 
 namespace FamilyTimeTools
@@ -23,7 +23,7 @@ namespace FamilyTimeTools
             Instance = this;
             CreateSettings();
             Universe.Init(1f, CreateUI, LogUniverse, default(UniverseLib.Config.UniverseLibConfig));
-            LoggerInstance.Msg("FamilyTimeTools 2.0.0：F1 开关 ESP，F2 开关 UniverseLib 窗口。");
+            LoggerInstance.Msg("FamilyTimeTools 2.1.0：F2 开关设置窗口。");
         }
 
         // 中文界面字体：游戏是 Windows 游戏，微软雅黑必然存在，直接优先用系统字体。
@@ -81,15 +81,8 @@ namespace FamilyTimeTools
         public override void OnUpdate()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null)
-            {
-                if (keyboard.f1Key.wasPressedThisFrame)
-                {
-                    _enabled.Value = !_enabled.Value;
-                    SettingsChanged();
-                }
-                if (keyboard.f2Key.wasPressedThisFrame) SetWindowVisible(!_windowRequested);
-            }
+            if (keyboard != null && keyboard.f2Key.wasPressedThisFrame)
+                SetWindowVisible(!_windowRequested);
             if (_settingsDirty && Time.realtimeSinceStartup >= _saveAt) PersistSettings();
             if (!_enabled.Value)
             {
@@ -108,6 +101,7 @@ namespace FamilyTimeTools
         {
             _targets.Clear();
             _scanTimer = 0f;
+            FloorStacking.Reset();
         }
 
         public override void OnDeinitializeMelon()
