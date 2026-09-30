@@ -190,6 +190,14 @@ namespace FamilyTimeTools.UI
             Toggle(content, "地板堆叠", "地板可以贴着下一块地板往上摸，按实际厚度紧贴", Mod._stackFloor);
             UiControls.Label(content, "只影响地板：瞄准已建成地板的顶面时，新地板底面直接贴住它；X / Z 仍然按最小格子对齐，其余建筑不受影响。", 44, 13, true);
             UiControls.Button(content, "导出实体模板列表", () => Mod.LoggerInstance.Msg("模板列表已导出：" + TemplateDump.Export()));
+
+            Heading(content, "准星注水", "按住热键在准星命中的地面上生成水；热键可自定义。");
+            Toggle(content, "启用注水", "按住热键持续注水", Mod._waterEnabled);
+            UiControls.Hotkey(content, "注水热键", "点击后按下你要的键，Esc 取消", () => Mod._waterKey.Value, value => Mod._waterKey.Value = value, _refresh);
+            UiControls.Slider(content, "每次注水量（桶）", 0.05f, 2f, () => Mod._waterAmount.Value, value => Mod._waterAmount.Value = value, "F2", false, _refresh);
+            UiControls.Slider(content, "喷射半径（格）", 0, 4, () => Mod._waterRadius.Value, value => Mod._waterRadius.Value = (int)value, "F0", true, _refresh);
+            UiControls.Label(content, "注水只在玩家周围的模拟窗口内生效（约 256 格），太远会失败。", 44, 13, true);
+            UiControls.Button(content, "在准星处抽干", () => Mod.LoggerInstance.Msg("抽干：" + WaterTool.DrainAtCrosshair() + " 格"));
         }
 
         private int _spawnTemplate = -1;

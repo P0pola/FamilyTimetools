@@ -1,4 +1,5 @@
 using System;
+using GAT;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -126,6 +127,109 @@ namespace FamilyTimeTools.UI
             input.onValueChanged.AddListener(value => onChanged(value));
             UIFactory.SetLayoutElement(field.GameObject, minHeight: 30, preferredHeight: 30, flexibleWidth: 1, flexibleHeight: 0);
             return input;
+        }
+
+        // 热键捕获：点一下按钮进入录制，接下来按的键写回配置。
+        // 实际采集由 PollHotkeyCapture 每帧轮询，避开 UGUI 的事件系统。
+        private static bool _capturing;
+        private static int _captureStartFrame = -1;
+
+        internal static bool IsCapturingHotkey => _capturing;
+        private static Action<string> _captureSetter;
+
+        internal static void Hotkey(GameObject parent, string caption, string description,
+            Func<string> get, Action<string> set, List<Action> refresh)
+        {
+            var row = Horizontal(parent, "Hotkey", 52);
+            Label(row, caption + "\n" + description, 42);
+            ButtonRef button = Button(row, "", () => StartCapture(set), 132);
+
+            Action sync = () =>
+            {
+                button.ButtonText.text = _capturing ? "按下新热键…" : get();
+                Paint(button, _capturing ? Accent : Surface);
+            };
+            refresh.Add(sync);
+            sync();
+        }
+
+        private static readonly List<UnityEngine.InputSystem.InputActionMap> SuspendedMaps
+            = new List<UnityEngine.InputSystem.InputActionMap>();
+
+        private static void StartCapture(Action<string> setter)
+        {
+            _capturing = true;
+            _captureStartFrame = UnityEngine.Time.frameCount;
+            _captureSetter = setter;
+
+            // 捕获期间禁用游戏输入，避免注册热键时误触发建造/交互。
+            // 做法与游戏自带的 InputMenu 一致。
+            SuspendMaps(World.playerController == null ? null : World.playerController.InputActionsAsset);
+            SuspendMaps(World.commandInputActions);
+        }
+
+        private static void SuspendMaps(UnityEngine.InputSystem.InputActionAsset asset)
+        {
+            if (asset == null) return;
+            for (int i = 0; i < asset.actionMaps.Count; i++)
+            {
+                var map = asset.actionMaps[i];
+                if (!map.enabled) continue;
+                SuspendedMaps.Add(map);
+                map.Disable();
+            }
+        }
+
+        private static void RestoreMaps()
+        {
+            for (int i = 0; i < SuspendedMaps.Count; i++)
+                SuspendedMaps[i].Enable();
+            SuspendedMaps.Clear();
+        }
+
+        internal static void CancelCapture()
+        {
+            _capturing = false;
+            _captureSetter = null;
+            RestoreMaps();
+        }
+
+        // 每帧轮询：捕到第一个按下的键就定下来。Esc 取消。
+        internal static void PollHotkeyCapture()
+        {
+            if (!_capturing) return;
+            // 跳过点击“录制”按钮那一帧，否则会把鼠标左键录成热键。
+            if (UnityEngine.Time.frameCount <= _captureStartFrame) return;
+
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            var mouse = UnityEngine.InputSystem.Mouse.current;
+
+            if (mouse != null)
+            {
+                if (mouse.leftButton.wasPressedThisFrame) { Commit("mouse0"); return; }
+                if (mouse.rightButton.wasPressedThisFrame) { Commit("mouse1"); return; }
+                if (mouse.middleButton.wasPressedThisFrame) { Commit("mouse2"); return; }
+            }
+
+            if (keyboard != null)
+            {
+                if (keyboard.escapeKey.wasPressedThisFrame) { CancelCapture(); return; }
+
+                foreach (var control in keyboard.allKeys)
+                {
+                    if (control == null || !control.wasPressedThisFrame) continue;
+                    // 存 Key 枚举名（G / LeftShift / F5），比 displayName 稳定且好解析。
+                    Commit(control.keyCode.ToString());
+                    return;
+                }
+            }
+        }
+
+        private static void Commit(string name)
+        {
+            if (_captureSetter != null) _captureSetter(name);
+            CancelCapture();
+            if (EspMod.Instance != null) EspMod.Instance.SettingsChanged();
         }
 
         internal static void Slider(GameObject parent, string caption, float min, float max,

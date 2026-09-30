@@ -26,6 +26,10 @@ namespace FamilyTimeTools
         internal MelonPreferences_Entry<float> _scanInterval;
         internal MelonPreferences_Entry<bool> _freeBuild;
         internal MelonPreferences_Entry<bool> _stackFloor;
+        internal MelonPreferences_Entry<bool> _waterEnabled;
+        internal MelonPreferences_Entry<string> _waterKey;
+        internal MelonPreferences_Entry<float> _waterAmount;
+        internal MelonPreferences_Entry<int> _waterRadius;
         private bool _settingsDirty;
         private float _saveAt;
 
@@ -54,6 +58,10 @@ namespace FamilyTimeTools
             _scanInterval = _cat.CreateEntry("ScanInterval", 0.15f, "扫描间隔");
             _freeBuild = _cat.CreateEntry("FreeBuild", false, "免费建造", "建造不消耗材料");
             _stackFloor = _cat.CreateEntry("StackFloor", false, "地板堆叠", "地板可以贴着下一块地板往上摸");
+            _waterEnabled = _cat.CreateEntry("WaterEnabled", false, "注水", "按住热键在准星处生成水");
+            _waterKey = _cat.CreateEntry("WaterKey", "G", "注水热键", "可在此修改，如 G / mouse1 / leftShift");
+            _waterAmount = _cat.CreateEntry("WaterAmount", 0.25f, "每次注水量", "每次脉冲注入的水量，单位：游戏水桶（1 桶 = 250 / 65535），0.05 - 2");
+            _waterRadius = _cat.CreateEntry("WaterRadius", 0, "喷射半径", "0 = 单格细水柱；1 及以上为方格范围，0 - 4");
         }
 
         internal void SettingsChanged()
@@ -92,6 +100,10 @@ namespace FamilyTimeTools
             _scanInterval.Value = 0.15f;
             _freeBuild.Value = false;
             _stackFloor.Value = false;
+            _waterEnabled.Value = false;
+            _waterKey.Value = "G";
+            _waterAmount.Value = 0.25f;
+            _waterRadius.Value = 0;
             foreach (EntityKind kind in Kinds)
                 _kindFilter[kind].Value = kind.DefaultEnabled;
             SettingsChanged();

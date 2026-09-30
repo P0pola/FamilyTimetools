@@ -23,7 +23,7 @@ namespace FamilyTimeTools
             Instance = this;
             CreateSettings();
             Universe.Init(1f, CreateUI, LogUniverse, default(UniverseLib.Config.UniverseLibConfig));
-            LoggerInstance.Msg("FamilyTimeTools 2.1.0：F2 开关设置窗口。");
+            LoggerInstance.Msg("FamilyTimeTools 2.0.2：F2 开关设置窗口；注水热键可在菜单里自定义。");
         }
 
         // 中文界面字体：游戏是 Windows 游戏，微软雅黑必然存在，直接优先用系统字体。
@@ -83,6 +83,8 @@ namespace FamilyTimeTools
             var keyboard = Keyboard.current;
             if (keyboard != null && keyboard.f2Key.wasPressedThisFrame)
                 SetWindowVisible(!_windowRequested);
+            UI.UiControls.PollHotkeyCapture();
+            WaterTool.Update();
             if (_settingsDirty && Time.realtimeSinceStartup >= _saveAt) PersistSettings();
             if (!_enabled.Value)
             {
@@ -102,6 +104,7 @@ namespace FamilyTimeTools
             _targets.Clear();
             _scanTimer = 0f;
             FloorStacking.Reset();
+            WaterTool.Reset();
         }
 
         public override void OnDeinitializeMelon()
